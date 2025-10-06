@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream's Academy - অ্যাডমিন প্যানেল</title>
+    <!-- Google Fonts: Hind Siluri for Bengali -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+    <style>
+        /* --- General Styles & Variables --- */
+        :root {
+            --primary-blue: #0a4d68;
+            --secondary-blue: #088395;
+            --light-blue: #05bfdb;
+            --accent-green: #28a745;
+            --accent-red: #dc3545;
+            --accent-yellow: #ffc107; /* START: নতুন ভ্যারিয়েবল */
+            --background-light: #f8f9fa;
+            --text-dark: #212529;
+            --text-light: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --card-radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        .hidden { display: none !important; }
+
+        /* --- Login Page --- */
+        #login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--primary-blue);
+        }
+        .login-box {
+            background: var(--text-light);
+            padding: 40px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-box h2 {
+            margin-bottom: 25px;
+            color: var(--primary-blue);
+        }
+        .login-box .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .login-box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex; /* START: পরিবর্তন */
+            align-items: center; /* START: পরিবর্তন */
+            gap: 8px; /* START: পরিবর্তন */
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--text-light);
+            width: 100%;
+            justify-content: center; /* START: পরিবর্তন */
+        }
+        .btn-primary:hover { background-color: #083c52; }
+
+        /* --- Admin Panel Layout --- */
+        #admin-panel {
+            display: flex;
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--text-light);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-blue);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-nav {
+            list-style: none;
+            flex-grow: 1;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            border-left: 4px solid transparent;
+        }
+        .sidebar-nav li.active a, .sidebar-nav a:hover {
+            background: #eaf6f6;
+            color: var(--secondary-blue);
+            border-left-color: var(--secondary-blue);
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            border-top: 1px solid var(--border-color);
+        }
+        .logout-btn:hover { background-color: #fcebeb; color: var(--accent-red); }
+
+        .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 30px;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .page-header h1 { color: var(--primary-blue); }
+
+        .btn-add {
+            background-color: var(--accent-green);
+            color: var(--text-light);
+        }
+        .btn-add .material-symbols-outlined { font-size: 20px; } /* START: পরিবর্তন */
+
+
+        /* --- Content Cards & Tables --- */
+        .content-box {
+            background: var(--text-light);
+            padding: 30px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em; /* START: পরিবর্তন */
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px; /* START: পরিবর্তন */
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle; /* START: পরিবর্তন */
+        }
+        .data-table th { background-color: var(--background-light); }
+        .actions-cell { white-space: nowrap; width: 1%;} /* START: পরিবর্তন */
+        .actions-cell button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            padding: 5px; /* START: পরিবর্তন */
+        }
+        .actions-cell .material-symbols-outlined {
+            transition: color 0.3s ease;
+        }
+        .btn-edit .material-symbols-outlined { color: var(--secondary-blue); }
+        .btn-edit:hover .material-symbols-outlined { color: var(--primary-blue); }
+        .btn-delete .material-symbols-outlined { color: var(--accent-red); }
+        .btn-delete:hover .material-symbols-outlined { color: #b02a37; }
+        
+        /* START: পেমেন্ট পেজের জন্য নতুন স্টাইল */
+        .status-select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-family: 'Hind Siliguri', sans-serif;
+            font-size: 0.9em;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: var(--text-light);
+        }
+        .status-badge.pending { background-color: var(--accent-yellow); color: var(--text-dark); }
+        .status-badge.approved { background-color: var(--accent-green); }
+        .status-badge.rejected { background-color: var(--accent-red); }
+        .btn-save-status {
+            background-color: var(--secondary-blue);
+            color: var(--text-light);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        /* END: পেমেন্ট পেজের জন্য নতুন স্টাইল */
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background: var(--text-light);
+            padding: 25px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 5px solid var(--primary-blue);
+        }
+        .stat-card .icon {
+            font-size: 3em;
+            color: var(--primary-blue);
+        }
+        .stat-card h3 { font-size: 2.5em; }
+        .stat-card p { color: #6c757d; }
+        /* START: নতুন স্টাইল */
+        .stat-card.pending-card { border-left-color: var(--accent-yellow); }
+        .stat-card.pending-card .icon { color: var(--accent-yellow); }
+        /* END: নতুন স্টাইল */
+
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: var(--card-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { color: var(--primary-blue); }
+        #close-modal {
+            background: none; border: none; font-size: 28px; cursor: pointer;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .modal-footer {
+            margin-top: 25px;
+            text-align: right;
+        }
+        .btn-cancel { background: #6c757d; color: white; margin-right: 10px; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================= Login Page ======================= -->
+    <div id="login-page">
+        <div class="login-box">
+            <h2>অ্যাডমিন লগইন</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">ইমেল</label>
+                    <input type="email" id="email" placeholder="admin@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">পাসওয়ার্ড</label>
+                    <input type="password" id="password" placeholder="password123" required>
+                </div>
+                <button type="submit" class="btn btn-primary">লগইন করুন</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================= Admin Panel ======================= -->
+    <div id="admin-panel" class="hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">Dream's Academy</div>
+            <ul class="sidebar-nav">
+                <li class="active" data-page="dashboard-page"><a href="#"><span class="material-symbols-outlined">dashboard</span> ড্যাশবোর্ড</a></li>
+                <li data-page="payments-page"><a href="#"><span class="material-symbols-outlined">receipt_long</span> পেমেন্ট ম্যানেজমেন্ট</a></li>
+                <li data-page="users-page"><a href="#"><span class="material-symbols-outlined">group</span> শিক্ষার্থী ম্যানেজমেন্ট</a></li>
+                <li data-page="services-page"><a href="#"><span class="material-symbols-outlined">construction</span> সার্ভিস ম্যানেজ</a></li>
+                <li data-page="courses-page"><a href="#"><span class="material-symbols-outlined">school</span> কোর্স ম্যানেজ</a></li>
+                <!-- START: পরিবর্তন -->
+                <li data-page="enrollments-page"><a href="#"><span class="material-symbols-outlined">assignment_ind</span> কোর্স এনরোলমেন্ট</a></li>
+                <!-- END: পরিবর্তন -->
+                <li data-page="notices-page"><a href="#"><span class="material-symbols-outlined">campaign</span> নোটিশবোর্ড ম্যানেজ</a></li>
+                <li data-page="join-class-page"><a href="#"><span class="material-symbols-outlined">video_call</span> ক্লাস জয়েনিং</a></li>
+            </ul>
+            <button class="logout-btn" id="logout-btn"><span class="material-symbols-outlined">logout</span> লগ আউট</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1>ড্যাশবোর্ড</h1>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card pending-card">
+                        <span class="material-symbols-outlined icon">pending_actions</span>
+                        <div>
+                            <h3 id="pending-payments">0</h3>
+                            <p>পেন্ডিং পেমেন্ট</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="material-symbols-outlined icon">construction</span>
+                        <div>
+                            <h3 id="total-services">0</h3>
+                            <p>মোট সার্ভিস</p>
+                        </div>
+                    </div>
+                     <div class="stat-card">
+                        <span class="material-symbols-outlined icon">school</span>
+                        <div>
+                            <h3 id="total-courses">0</h3>
+                            <p>মোট কোর্স</p>
+                        </div>
+                    </div>
+                     <div class="stat-card">
+                        <span class="material-symbols-outlined icon">campaign</span>
+                        <div>
+                            <h3 id="total-notices">0</h3>
+                            <p>মোট নোটিশ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Page -->
+            <div id="payments-page" class="page">
+                <div class="page-header">
+                    <h1>পেমেন্ট ম্যানেজমেন্ট</h1>
+                </div>
+                <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ইমেইল</th>
+                                <th>কোর্স/সার্ভিস</th>
+                                <th>পরিমাণ</th>
+                                <th>TrxID</th>
+                                <th>সময়</th>
+                                <th>স্ট্যাটাস</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- START: নতুন শিক্ষার্থী পেজ যোগ করা হয়েছে -->
+            <div id="users-page" class="page">
+                <div class="page-header">
+                    <h1>শিক্ষার্থী ম্যানেজমেন্ট</h1>
+                </div>
+                <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>নাম</th>
+                                <th>ইমেইল</th>
+                                <th>মোবাইল</th>
+                                <th>টাইটেল</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- END: নতুন শিক্ষার্থী পেজ -->
+
+            <!-- Services Page -->
+            <div id="services-page" class="page">
+                <div class="page-header">
+                    <h1>সার্ভিস ম্যানেজমেন্ট</h1>
+                    <button class="btn btn-add" onclick="openModalForAdd('services')"><span class="material-symbols-outlined">add</span> নতুন সার্ভিস</button>
+                </div>
+                <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>সার্ভিসের নাম</th>
+                                <th>বর্তমান মূল্য</th>
+                                <th>পূর্বের মূল্য</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Courses Page -->
+            <div id="courses-page" class="page">
+                <div class="page-header">
+                    <h1>কোর্স ম্যানেজমেন্ট</h1>
+                    <button class="btn btn-add" onclick="openModalForAdd('courses')"><span class="material-symbols-outlined">add</span> নতুন কোর্স</button>
+                </div>
+                 <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>কোর্সের নাম</th>
+                                <th>প্রশিক্ষক</th>
+                                <th>মূল্য</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- START: পরিবর্তন - My Courses পেজটি এখন Enrollments পেজ -->
+            <div id="enrollments-page" class="page">
+                <div class="page-header">
+                    <h1>কোর্স এনরোলমেন্ট</h1>
+                    <button class="btn btn-add" onclick="openModalForAdd('enrollments')"><span class="material-symbols-outlined">add</span> নতুন এনরোলমেন্ট</button>
+                </div>
+                <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>শিক্ষার্থীর ইমেইল</th>
+                                <th>কোর্সের নাম</th>
+                                <th>ব্যাচ নং</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enrollments-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- END: পরিবর্তন -->
+
+            <!-- Notices Page -->
+            <div id="notices-page" class="page">
+                <div class="page-header">
+                    <h1>নোটিশবোর্ড ম্যানেজমেন্ট</h1>
+                    <button class="btn btn-add" onclick="openModalForAdd('notices')"><span class="material-symbols-outlined">add</span> নতুন নোটিশ</button>
+                </div>
+                 <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>শিরোনাম</th>
+                                <th>বর্ণনা</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notices-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Join Class Page -->
+            <div id="join-class-page" class="page">
+                <div class="page-header">
+                    <h1>ক্লাস জয়েনিং ম্যানেজমেন্ট</h1>
+                    <button class="btn btn-add" onclick="openModalForAdd('joinClass')"><span class="material-symbols-outlined">add</span> নতুন ক্লাস লিঙ্ক</button>
+                </div>
+                <div class="content-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>কোর্সের নাম</th>
+                                <th>ক্লাসের লিঙ্ক</th>
+                                <th>সময়</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="join-class-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ======================= Modal for Add/Edit ======================= -->
+    <div id="admin-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button id="close-modal" class="material-symbols-outlined">close</button>
+            </div>
+            <form id="modal-form">
+                <!-- Form fields will be dynamically inserted here -->
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs (Compatibility Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAu6Lo33AH6GWFDHusaP14fmAHb0LEzWOQ",
+          authDomain: "go-pixel-f1c13.firebaseapp.com",
+          projectId: "go-pixel-f1c13",
+          storageBucket: "go-pixel-f1c13.appspot.com",
+          messagingSenderId: "390711689002",
+          appId: "1:390711689002:web:0ce672f38aeca40d2f6853"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DOM Elements ---
+            const loginPage = document.getElementById('login-page');
+            const adminPanel = document.getElementById('admin-panel');
+            const loginForm = document.getElementById('login-form');
+            const logoutBtn = document.getElementById('logout-btn');
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav li');
+            const pages = document.querySelectorAll('.page');
+            
+            const adminModal = document.getElementById('admin-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalForm = document.getElementById('modal-form');
+            const closeModalBtn = document.getElementById('close-modal');
+
+            // --- Authentication ---
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loginPage.classList.add('hidden');
+                    adminPanel.classList.remove('hidden');
+                    navigateTo('dashboard-page');
+                } else {
+                    loginPage.classList.remove('hidden');
+                    adminPanel.classList.add('hidden');
+                }
+            });
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                auth.signInWithEmailAndPassword(email, password)
+                    .catch(error => {
+                        console.error("Login Error:", error);
+                        alert('ভুল ইমেল অথবা পাসওয়ার্ড!');
+                    });
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                auth.signOut();
+            });
+
+            // --- Navigation ---
+            function navigateTo(pageId) {
+                pages.forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                document.querySelector(`.sidebar-nav li[data-page="${pageId}"]`).classList.add('active');
+                
+                // Refresh data on page navigation
+                switch(pageId) {
+                    case 'dashboard-page': renderDashboard(); break;
+                    case 'payments-page': renderPayments(); break;
+                    case 'users-page': renderUsers(); break;
+                    case 'services-page': renderServices(); break;
+                    case 'courses-page': renderCourses(); break;
+                    // START: পরিবর্তন
+                    case 'enrollments-page': renderEnrollments(); break;
+                    // END: পরিবর্তন
+                    case 'notices-page': renderNotices(); break;
+                    case 'join-class-page': renderJoinClass(); break;
+                }
+            }
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    navigateTo(pageId);
+                });
+            });
+
+            // --- Dashboard ---
+            async function renderDashboard() {
+                try {
+                    const servicesSnapshot = await db.collection('services').get();
+                    const coursesSnapshot = await db.collection('courses').get();
+                    const noticesSnapshot = await db.collection('notices').get();
+                    const pendingPaymentsSnapshot = await db.collection('payments').where('status', '==', 'pending').get();
+                    
+                    document.getElementById('pending-payments').textContent = pendingPaymentsSnapshot.size;
+                    document.getElementById('total-services').textContent = servicesSnapshot.size;
+                    document.getElementById('total-courses').textContent = coursesSnapshot.size;
+                    document.getElementById('total-notices').textContent = noticesSnapshot.size;
+                } catch (error) {
+                    console.error("Error loading dashboard data:", error);
+                }
+            }
+
+            // --- CRUD Operations ---
+            
+            async function renderPayments() {
+                const tableBody = document.getElementById('payments-table-body');
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">পেমেন্টের তথ্য লোড হচ্ছে...</td></tr>`;
+
+                try {
+                    const snapshot = await db.collection('payments').orderBy('timestamp', 'desc').get();
+
+                    if (snapshot.empty) {
+                        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">এখনও কোনো পেমেন্টের তথ্য জমা পড়েনি।</td></tr>`;
+                        return;
+                    }
+
+                    let tableHTML = '';
+                    snapshot.forEach(doc => {
+                        const payment = { id: doc.id, ...doc.data() };
+                        const timestamp = payment.timestamp ? new Date(payment.timestamp.seconds * 1000).toLocaleString('bn-BD') : 'N/A';
+                        const statusClass = (payment.status || 'pending').toLowerCase();
+
+                        const row = `
+                            <tr>
+                                <td>${payment.userEmail}</td>
+                                <td>${payment.itemName}</td>
+                                <td>৳ ${payment.amount}</td>
+                                <td>${payment.transactionId}</td>
+                                <td>${timestamp}</td>
+                                <td>
+                                    <span class="status-badge ${statusClass}">${payment.status}</span>
+                                </td>
+                                <td class="actions-cell">
+                                    <select class="status-select" id="status-select-${payment.id}">
+                                        <option value="pending" ${payment.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                        <option value="approved" ${payment.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                        <option value="rejected" ${payment.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                    </select>
+                                    <button class="btn btn-save-status" onclick="updatePaymentStatus('${payment.id}')">Save</button>
+                                    <button class="btn-delete" onclick="deleteItem('payments', '${payment.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableHTML += row;
+                    });
+                    tableBody.innerHTML = tableHTML;
+                } catch(error) {
+                    console.error("--- Payment Rendering Error ---");
+                    console.error("An error occurred while fetching payments:", error);
+                    let errorMessage = `<tr><td colspan="7" style="color: red; text-align: center;">An error occurred. Check the console.</td></tr>`;
+                    if (error.code === 'permission-denied') {
+                        errorMessage = `<tr><td colspan="7" style="color: red; text-align: center;">Error: Permission Denied. Check your Firestore Security Rules.</td></tr>`;
+                    }
+                    tableBody.innerHTML = errorMessage;
+                }
+            }
+
+            window.updatePaymentStatus = async (docId) => {
+                const newStatus = document.getElementById(`status-select-${docId}`).value;
+                try {
+                    await db.collection('payments').doc(docId).update({ status: newStatus });
+                    alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
+                    renderPayments(); // Refresh the table
+                    renderDashboard(); // Refresh dashboard counts
+                } catch (error) {
+                    console.error("Error updating status:", error);
+                    alert('স্ট্যাটাস আপডেট করার সময় একটি সমস্যা হয়েছে।');
+                }
+            };
+
+            async function renderUsers() {
+                const tableBody = document.getElementById('users-table-body');
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">শিক্ষার্থীদের তথ্য লোড হচ্ছে...</td></tr>`;
+
+                try {
+                    const snapshot = await db.collection('users').get();
+
+                    if (snapshot.empty) {
+                        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">কোনো নিবন্ধিত শিক্ষার্থী পাওয়া যায়নি।</td></tr>`;
+                        return;
+                    }
+
+                    let tableHTML = '';
+                    snapshot.forEach(doc => {
+                        const user = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${user.name || 'N/A'}</td>
+                                <td>${user.email}</td>
+                                <td>${user.mobile || 'N/A'}</td>
+                                <td>${user.title || 'N/A'}</td>
+                                <td class="actions-cell">
+                                    <button class="btn-delete" onclick="deleteItem('users', '${user.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableHTML += row;
+                    });
+                    tableBody.innerHTML = tableHTML;
+                } catch(error) {
+                    console.error("--- User Rendering Error ---", error);
+                    let errorMessage = `<tr><td colspan="5" style="color: red; text-align: center;">An error occurred. Check the console.</td></tr>`;
+                    if (error.code === 'permission-denied') {
+                        errorMessage = `<tr><td colspan="5" style="color: red; text-align: center;">ত্রুটি: ডাটা পড়ার অনুমতি নেই। আপনার Firestore Security Rules চেক করুন।</td></tr>`;
+                    }
+                    tableBody.innerHTML = errorMessage;
+                }
+            }
+
+            async function renderServices() {
+                try {
+                    const snapshot = await db.collection('services').get();
+                    const tableBody = document.getElementById('services-table-body');
+                    tableBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const service = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${service.name}</td>
+                                <td>৳ ${service.currentPrice}</td>
+                                <td>৳ ${service.oldPrice}</td>
+                                <td class="actions-cell">
+                                    <button class="btn-edit" onclick="openModalForEdit('services', '${service.id}')"><span class="material-symbols-outlined">edit</span></button>
+                                    <button class="btn-delete" onclick="deleteItem('services', '${service.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } catch(error) {
+                    console.error("Error rendering services:", error);
+                }
+            }
+
+            async function renderCourses() {
+                try {
+                    const snapshot = await db.collection('courses').get();
+                    const tableBody = document.getElementById('courses-table-body');
+                    tableBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const course = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${course.name}</td>
+                                <td>${course.instructor}</td>
+                                <td>৳ ${course.price}</td>
+                                <td class="actions-cell">
+                                    <button class="btn-edit" onclick="openModalForEdit('courses', '${course.id}')"><span class="material-symbols-outlined">edit</span></button>
+                                    <button class="btn-delete" onclick="deleteItem('courses', '${course.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } catch(error) {
+                    console.error("Error rendering courses:", error);
+                }
+            }
+
+            // START: পরিবর্তন - renderMyCourses ফাংশনটি এখন renderEnrollments
+            async function renderEnrollments() {
+                const tableBody = document.getElementById('enrollments-table-body');
+                try {
+                    tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center;">এনরোলমেন্টের তথ্য লোড হচ্ছে...</td></tr>`;
+                    const snapshot = await db.collection('enrollments').orderBy('enrollmentDate', 'desc').get();
+                    
+                    if (snapshot.empty) {
+                        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center;">কোনো এনরোলমেন্ট পাওয়া যায়নি।</td></tr>`;
+                        return;
+                    }
+                    
+                    let tableHTML = '';
+                    snapshot.forEach(doc => {
+                        const enrollment = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${enrollment.studentEmail}</td>
+                                <td>${enrollment.courseName}</td>
+                                <td>${enrollment.batch}</td>
+                                <td class="actions-cell">
+                                    <button class="btn-delete" onclick="deleteItem('enrollments', '${enrollment.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableHTML += row;
+                    });
+                    tableBody.innerHTML = tableHTML;
+                } catch(error) {
+                    console.error("Error rendering enrollments:", error);
+                    tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">তথ্য লোড করতে সমস্যা হয়েছে।</td></tr>`;
+                }
+            }
+            // END: পরিবর্তন
+
+            async function renderNotices() {
+                try {
+                    const snapshot = await db.collection('notices').get();
+                    const tableBody = document.getElementById('notices-table-body');
+                    tableBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const notice = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${notice.title}</td>
+                                <td>${(notice.description || '').substring(0, 50)}...</td>
+                                <td class="actions-cell">
+                                    <button class="btn-edit" onclick="openModalForEdit('notices', '${notice.id}')"><span class="material-symbols-outlined">edit</span></button>
+                                    <button class="btn-delete" onclick="deleteItem('notices', '${notice.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } catch(error) {
+                    console.error("Error rendering notices:", error);
+                }
+            }
+            
+            async function renderJoinClass() {
+                try {
+                    const snapshot = await db.collection('joinClass').get();
+                    const tableBody = document.getElementById('join-class-table-body');
+                    tableBody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const classInfo = { id: doc.id, ...doc.data() };
+                        const row = `
+                            <tr>
+                                <td>${classInfo.courseName}</td>
+                                <td><a href="${classInfo.link}" target="_blank">ক্লাস লিঙ্ক</a></td>
+                                <td>${classInfo.schedule}</td>
+                                <td class="actions-cell">
+                                    <button class="btn-edit" onclick="openModalForEdit('joinClass', '${classInfo.id}')"><span class="material-symbols-outlined">edit</span></button>
+                                    <button class="btn-delete" onclick="deleteItem('joinClass', '${classInfo.id}')"><span class="material-symbols-outlined">delete</span></button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } catch(error) {
+                    console.error("Error rendering join class links:", error);
+                }
+            }
+
+            // START: পরিবর্তন - openModalForAdd ফাংশনটি এখন async এবং enrollments হ্যান্ডেল করে
+            window.openModalForAdd = async (collection) => {
+                modalForm.reset();
+                let formFieldsHTML = '';
+                
+                if (collection === 'enrollments') {
+                    modalTitle.textContent = `নতুন ${getBengaliTypeName(collection)} যোগ করুন`;
+                    modalForm.innerHTML = `<p style="text-align:center;">শিক্ষার্থী ও কোর্সের তালিকা লোড হচ্ছে...</p>`;
+                    adminModal.classList.remove('hidden');
+                    try {
+                        const usersSnapshot = await db.collection('users').get();
+                        const coursesSnapshot = await db.collection('courses').get();
+                        
+                        let userOptions = usersSnapshot.docs.map(doc => `<option value="${doc.id}|${doc.data().email}">${doc.data().name || 'N/A'} (${doc.data().email})</option>`).join('');
+                        let courseOptions = coursesSnapshot.docs.map(doc => `<option value="${doc.id}">${doc.data().name}</option>`).join('');
+                        
+                        formFieldsHTML = getFormFields(collection, {}, { userOptions, courseOptions });
+                    } catch (error) {
+                        console.error("Error fetching data for modal:", error);
+                        alert('শিক্ষার্থী ও কোর্সের তালিকা আনতে সমস্যা হয়েছে।');
+                        formFieldsHTML = `<p style="text-align:center; color: red;">একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।</p>`;
+                    }
+                } else {
+                    modalTitle.textContent = `নতুন ${getBengaliTypeName(collection)} যোগ করুন`;
+                    formFieldsHTML = getFormFields(collection);
+                }
+                
+                modalForm.innerHTML = formFieldsHTML + getFormFooter();
+                if (collection !== 'enrollments' || formFieldsHTML.includes('<select')) {
+                    adminModal.classList.remove('hidden');
+                }
+                
+                modalForm.onsubmit = (e) => {
+                    e.preventDefault();
+                    saveItem(collection);
+                };
+            };
+            // END: পরিবর্তন
+
+            window.openModalForEdit = async (collection, id) => {
+                try {
+                    const doc = await db.collection(collection).doc(id).get();
+                    if (doc.exists) {
+                        const item = doc.data();
+                        modalForm.innerHTML = getFormFields(collection, item) + getFormFooter();
+                        modalTitle.textContent = `${getBengaliTypeName(collection)} এডিট করুন`;
+                        adminModal.classList.remove('hidden');
+                        modalForm.onsubmit = (e) => {
+                            e.preventDefault();
+                            saveItem(collection, id);
+                        };
+                    } else {
+                        console.error("No such document!");
+                    }
+                } catch(error) {
+                    console.error("Error opening edit modal:", error);
+                }
+            };
+            
+            window.deleteItem = async (collection, id) => {
+                if(confirm('আপনি কি নিশ্চিতভাবে এটি ডিলিট করতে চান?')) {
+                    try {
+                        await db.collection(collection).doc(id).delete();
+                        alert('সফলভাবে ডিলিট করা হয়েছে।');
+                        const currentPageId = document.querySelector('.page.active').id;
+                        navigateTo(currentPageId);
+                        renderDashboard(); // Update dashboard counts
+                    } catch(error) {
+                        console.error("Error deleting item:", error);
+                        alert('ডিলিট করার সময় একটি সমস্যা হয়েছে।');
+                    }
+                }
+            };
+
+            // START: পরিবর্তন - saveItem ফাংশন enrollments হ্যান্ডেল করার জন্য আপডেট করা হয়েছে
+            async function saveItem(collection, id = null) {
+                const formData = new FormData(modalForm);
+                let newItem;
+                let type = collection; 
+
+                if (type === 'services') {
+                    newItem = {
+                        name: formData.get('name') || '',
+                        description: formData.get('description') || '',
+                        oldPrice: Number(formData.get('oldPrice')) || 0,
+                        currentPrice: Number(formData.get('currentPrice')) || 0,
+                        features: (formData.get('features') || '').split(',').map(f => f.trim())
+                    };
+                } else if (type === 'courses') {
+                     newItem = {
+                        name: formData.get('name') || '',
+                        instructor: formData.get('instructor') || '',
+                        price: Number(formData.get('price')) || 0,
+                        category: formData.get('category') || '',
+                        duration: formData.get('duration') || '',
+                        lectures: Number(formData.get('lectures')) || 0,
+                        image: formData.get('image') || '',
+                    };
+                } else if (type === 'enrollments') {
+                    const studentData = (formData.get('student') || '|').split('|');
+                    const courseId = formData.get('course');
+                    const batch = formData.get('batch');
+
+                    if (!studentData[0] || !courseId || !batch) {
+                        alert("অনুগ্রহ করে সকল তথ্য পূরণ করুন।");
+                        return;
+                    }
+
+                    const courseDoc = await db.collection('courses').doc(courseId).get();
+                    if (!courseDoc.exists) {
+                        alert("নির্বাচিত কোর্সটি খুঁজে পাওয়া যায়নি।");
+                        return;
+                    }
+                    const courseDetails = courseDoc.data();
+
+                    newItem = {
+                        studentUid: studentData[0],
+                        studentEmail: studentData[1],
+                        courseId: courseId,
+                        courseName: courseDetails.name,
+                        batch: batch,
+                        enrollmentDate: new Date(),
+                        // ক্লায়েন্ট সাইডে সহজে দেখানোর জন্য অতিরিক্ত ডেটা
+                        courseImage: courseDetails.image || 'https://via.placeholder.com/400x250',
+                        courseCategory: courseDetails.category || 'General'
+                    };
+                } else if (type === 'joinClass') {
+                    newItem = {
+                        courseName: formData.get('courseName') || '',
+                        link: formData.get('link') || '',
+                        schedule: formData.get('schedule') || ''
+                    };
+                } else { // notices
+                    newItem = {
+                        title: formData.get('title') || '',
+                        description: formData.get('description') || ''
+                    };
+                }
+
+                try {
+                    if (id) { // Edit mode
+                        await db.collection(collection).doc(id).set(newItem, { merge: true });
+                    } else { // Add mode
+                        await db.collection(collection).add(newItem);
+                    }
+                    
+                    adminModal.classList.add('hidden');
+                    const currentPageId = document.querySelector('.page.active').id;
+                    navigateTo(currentPageId);
+                    renderDashboard(); // Update dashboard counts
+                } catch(error) {
+                    console.error("Error saving item:", error);
+                    alert("তথ্য সংরক্ষণ করার সময় একটি সমস্যা হয়েছে।");
+                }
+            }
+            // END: পরিবর্তন
+
+            // --- Modal and Form Helpers ---
+            closeModalBtn.addEventListener('click', () => adminModal.classList.add('hidden'));
+
+            function getBengaliTypeName(collection) {
+                if (collection === 'services') return 'সার্ভিস';
+                if (collection === 'courses') return 'কোর্স';
+                if (collection === 'enrollments') return 'এনরোলমেন্ট';
+                if (collection === 'joinClass') return 'ক্লাস লিঙ্ক';
+                return 'নোটিশ';
+            }
+            
+            // START: পরিবর্তন - getFormFields ফাংশন enrollments এর জন্য নতুন ফিল্ড যুক্ত করেছে
+            function getFormFields(type, data = {}, extra = {}) {
+                if (type === 'services') {
+                    return `
+                        <div class="form-group">
+                            <label>সার্ভিসের নাম</label>
+                            <input type="text" name="name" value="${data.name || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ছোট বর্ণনা</label>
+                            <textarea name="description" rows="3">${data.description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>বর্তমান মূল্য</label>
+                            <input type="number" name="currentPrice" value="${data.currentPrice || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>পূর্বের মূল্য</label>
+                            <input type="number" name="oldPrice" value="${data.oldPrice || ''}">
+                        </div>
+                        <div class="form-group">
+                            <label>ফিচার সমূহ (কমা দিয়ে আলাদা করুন)</label>
+                            <input type="text" name="features" value="${(data.features || []).join(', ')}">
+                        </div>
+                    `;
+                }
+                if (type === 'courses') {
+                    return `
+                        <div class="form-group">
+                            <label>কোর্সের নাম</label>
+                            <input type="text" name="name" value="${data.name || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>প্রশিক্ষকের নাম</label>
+                            <input type="text" name="instructor" value="${data.instructor || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>মূল্য</label>
+                            <input type="number" name="price" value="${data.price || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ক্যাটাগরি</label>
+                            <input type="text" name="category" value="${data.category || ''}" placeholder="e.g., FREELANCING">
+                        </div>
+                        <div class="form-group">
+                            <label>সময়কাল</label>
+                            <input type="text" name="duration" value="${data.duration || ''}" placeholder="e.g., 24:00 ঘণ্টা">
+                        </div>
+                        <div class="form-group">
+                            <label>লেকচার সংখ্যা</label>
+                            <input type="number" name="lectures" value="${data.lectures || ''}" placeholder="e.g., 40">
+                        </div>
+                        <div class="form-group">
+                            <label>ছবি URL</label>
+                            <input type="text" name="image" value="${data.image || ''}" placeholder="https://via.placeholder.com/400x250">
+                        </div>
+                    `;
+                }
+                if (type === 'enrollments') {
+                    return `
+                        <div class="form-group">
+                            <label>শিক্ষার্থী নির্বাচন করুন</label>
+                            <select name="student" required>${extra.userOptions || ''}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>কোর্স নির্বাচন করুন</label>
+                            <select name="course" required>${extra.courseOptions || ''}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>ব্যাচ নং</label>
+                            <input type="text" name="batch" value="${data.batch || ''}" placeholder="যেমন: 122" required>
+                        </div>
+                    `;
+                }
+                if (type === 'joinClass') {
+                    return `
+                        <div class="form-group">
+                            <label>কোর্সের নাম</label>
+                            <input type="text" name="courseName" value="${data.courseName || ''}" required>
+                        </div>
+                         <div class="form-group">
+                            <label>ক্লাসের লিঙ্ক</label>
+                            <input type="text" name="link" value="${data.link || ''}" placeholder="https://meet.google.com/..." required>
+                        </div>
+                         <div class="form-group">
+                            <label>সময়</label>
+                            <input type="text" name="schedule" value="${data.schedule || ''}" placeholder="e.g., প্রতি শনি ও সোমবার রাত ৯টা">
+                        </div>
+                    `;
+                }
+                if (type === 'notices') {
+                    return `
+                        <div class="form-group">
+                            <label>শিরোনাম</label>
+                            <input type="text" name="title" value="${data.title || ''}" required>
+                        </div>
+                         <div class="form-group">
+                            <label>বর্ণনা</label>
+                            <textarea name="description" rows="4" required>${data.description || ''}</textarea>
+                        </div>
+                    `;
+                }
+                return '';
+            }
+            // END: পরিবর্তন
+            
+            function getFormFooter() {
+                return `
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancel" onclick="document.getElementById('admin-modal').classList.add('hidden')"> বাতিল করুন</button>
+                        <button type="submit" class="btn btn-primary">সংরক্ষণ করুন</button>
+                    </div>
+                `;
+            }
+
+            function capitalizeFirstLetter(string) {
+                if (!string) return '';
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+        });
+    </script>
+</body>
+</html>
