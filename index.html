@@ -694,50 +694,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // ##################################################################
-        // ### START: নতুন এবং সংশোধিত কোড ###
-        // ##################################################################
-
-        // এই ফাংশনটি এখন window অবজেক্টের সাথে যুক্ত এবং onclick থেকে কল করার জন্য প্রস্তুত
-        window.updatePaymentStatus = async (buttonElement, docId) => {
-            // বাটনটির আগের এলিমেন্ট (select ড্রপডাউন) খুঁজে বের করা হচ্ছে
-            const selectElement = buttonElement.previousElementSibling;
-            
-            if (!selectElement || selectElement.tagName !== 'SELECT') {
-                console.error('Could not find the select element next to the clicked button.');
-                alert('একটি অপ্রত্যাশিত সমস্যা হয়েছে।');
-                return;
-            }
-            
-            const newStatus = selectElement.value;
-            
-            // বাটনটি নিষ্ক্রিয় করা হচ্ছে
-            buttonElement.textContent = 'Saving...';
-            buttonElement.disabled = true;
-
-            try {
-                // Firestore এ ডেটা আপডেট করা হচ্ছে
-                await db.collection('payments').doc(docId).update({ status: newStatus });
-                alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
-                
-                // সফলভাবে আপডেট হওয়ার পর টেবিল ও ড্যাশবোর্ড পুনরায় লোড করা হচ্ছে
-                renderPayments();
-                renderDashboard();
-
-            } catch (error) {
-                console.error("--- FIRESTORE UPDATE FAILED ---", error);
-                alert('স্ট্যাটাস আপডেট করার সময় একটি সমস্যা হয়েছে।');
-                
-                // কোনো সমস্যা হলে বাটনটি আবার সক্রিয় করা হচ্ছে
-                buttonElement.textContent = 'Save';
-                buttonElement.disabled = false;
-            }
-        };
-
-        // ##################################################################
-        // ### END: নতুন এবং সংশোধিত কোড ###
-        // ##################################################################
-
         document.addEventListener('DOMContentLoaded', function() {
             // --- DOM Elements ---
             const loginPage = document.getElementById('login-page');
@@ -869,6 +825,53 @@
             });
 
             // --- CRUD Operations ---
+            
+            // ##################################################################
+            // ### START: নতুন এবং সংশোধিত কোড ###
+            // ##################################################################
+
+            // এই ফাংশনটি window অবজেক্টের সাথে যুক্ত করা হয়েছে
+            window.updatePaymentStatus = async (docId) => {
+                const selectElement = document.getElementById(`status-select-${docId}`);
+                if (!selectElement) {
+                    console.error(`Could not find the select element for docId: ${docId}`);
+                    alert('একটি অপ্রত্যাশিত সমস্যা হয়েছে।');
+                    return;
+                }
+                
+                const newStatus = selectElement.value;
+                const saveButton = selectElement.nextElementSibling; 
+
+                if(saveButton) {
+                    saveButton.textContent = 'Saving...';
+                    saveButton.disabled = true;
+                }
+
+                try {
+                    await db.collection('payments').doc(docId).update({ status: newStatus });
+                    alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
+                    
+                    // ডেটা পুনরায় লোড করা হচ্ছে
+                    renderPayments();
+                    renderDashboard();
+
+                } catch (error) {
+                    console.error("--- FIRESTORE UPDATE FAILED ---", error);
+                    let errorMessage = 'স্ট্যাটাস আপডেট করার সময় একটি গুরুতর সমস্যা হয়েছে।\n';
+                    if (error.code === 'permission-denied') {
+                        errorMessage += 'সম্ভাব্য কারণ: Firestore Security Rules আপনাকে এই ডেটা পরিবর্তনের অনুমতি দিচ্ছে না।';
+                    } else {
+                        errorMessage += `ত্রুটি: ${error.message}`;
+                    }
+                    alert(errorMessage);
+                    
+                     if(saveButton) {
+                        saveButton.textContent = 'Save';
+                        saveButton.disabled = false;
+                    }
+                }
+            };
+
             async function renderPayments() {
                 const tableBody = document.getElementById('payments-table-body');
                 tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">পেমেন্টের তথ্য লোড হচ্ছে...</td></tr>`;
@@ -887,7 +890,7 @@
                         const timestamp = payment.timestamp ? new Date(payment.timestamp.seconds * 1000).toLocaleString('bn-BD') : 'N/A';
                         const statusClass = (payment.status || 'pending').toLowerCase();
 
-                        // এখানে onclick এ `this` এবং `payment.id` পাস করা হয়েছে
+                        // বাটনে সরাসরি onclick অ্যাট্রিবিউট ব্যবহার করা হয়েছে
                         const row = `
                             <tr>
                                 <td>${payment.userEmail}</td>
@@ -899,13 +902,13 @@
                                     <span class="status-badge ${statusClass}">${payment.status}</span>
                                 </td>
                                 <td class="actions-cell">
-                                    <select class="status-select">
+                                    <select class="status-select" id="status-select-${payment.id}">
                                         <option value="pending" ${payment.status === 'pending' ? 'selected' : ''}>Pending</option>
                                         <option value="approved" ${payment.status === 'approved' ? 'selected' : ''}>Approved</option>
                                         <option value="rejected" ${payment.status === 'rejected' ? 'selected' : ''}>Rejected</option>
                                     </select>
                                     
-                                    <button class="btn btn-save-status" onclick="updatePaymentStatus(this, '${payment.id}')">Save</button>
+                                    <button class="btn btn-save-status" onclick="updatePaymentStatus('${payment.id}')">Save</button>
                                     
                                     <button class="btn-delete" onclick="deleteItem('payments', '${payment.id}')"><span class="material-symbols-outlined">delete</span></button>
                                 </td>
@@ -923,6 +926,11 @@
                     tableBody.innerHTML = errorMessage;
                 }
             }
+            
+            // ##################################################################
+            // ### END: নতুন এবং সংশোধিত কোড ###
+            // ##################################################################
+
 
             async function renderUsers() {
                 const tableBody = document.getElementById('users-table-body');
