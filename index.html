@@ -694,6 +694,50 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // ##################################################################
+        // ### START: নতুন এবং সংশোধিত কোড ###
+        // ##################################################################
+
+        // এই ফাংশনটি এখন window অবজেক্টের সাথে যুক্ত এবং onclick থেকে কল করার জন্য প্রস্তুত
+        window.updatePaymentStatus = async (buttonElement, docId) => {
+            // বাটনটির আগের এলিমেন্ট (select ড্রপডাউন) খুঁজে বের করা হচ্ছে
+            const selectElement = buttonElement.previousElementSibling;
+            
+            if (!selectElement || selectElement.tagName !== 'SELECT') {
+                console.error('Could not find the select element next to the clicked button.');
+                alert('একটি অপ্রত্যাশিত সমস্যা হয়েছে।');
+                return;
+            }
+            
+            const newStatus = selectElement.value;
+            
+            // বাটনটি নিষ্ক্রিয় করা হচ্ছে
+            buttonElement.textContent = 'Saving...';
+            buttonElement.disabled = true;
+
+            try {
+                // Firestore এ ডেটা আপডেট করা হচ্ছে
+                await db.collection('payments').doc(docId).update({ status: newStatus });
+                alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
+                
+                // সফলভাবে আপডেট হওয়ার পর টেবিল ও ড্যাশবোর্ড পুনরায় লোড করা হচ্ছে
+                renderPayments();
+                renderDashboard();
+
+            } catch (error) {
+                console.error("--- FIRESTORE UPDATE FAILED ---", error);
+                alert('স্ট্যাটাস আপডেট করার সময় একটি সমস্যা হয়েছে।');
+                
+                // কোনো সমস্যা হলে বাটনটি আবার সক্রিয় করা হচ্ছে
+                buttonElement.textContent = 'Save';
+                buttonElement.disabled = false;
+            }
+        };
+
+        // ##################################################################
+        // ### END: নতুন এবং সংশোধিত কোড ###
+        // ##################################################################
+
         document.addEventListener('DOMContentLoaded', function() {
             // --- DOM Elements ---
             const loginPage = document.getElementById('login-page');
@@ -707,9 +751,8 @@
             const modalTitle = document.getElementById('modal-title');
             const modalForm = document.getElementById('modal-form');
             const closeModalBtn = document.getElementById('close-modal');
-
             const heroSettingsForm = document.getElementById('hero-settings-form');
-
+            
             // --- Authentication ---
             auth.onAuthStateChanged(user => {
                 if (user) {
@@ -753,7 +796,7 @@
                     case 'services-page': renderServices(); break;
                     case 'courses-page': renderCourses(); break;
                     case 'enrollments-page': renderEnrollments(); break;
-                    case 'curriculum-page': renderCurriculum(); break; /* <--- New Case */
+                    case 'curriculum-page': renderCurriculum(); break;
                     case 'notices-page': renderNotices(); break;
                     case 'join-class-page': renderJoinClass(); break;
                     case 'settings-page': renderSettings(); break;
@@ -826,7 +869,6 @@
             });
 
             // --- CRUD Operations ---
-
             async function renderPayments() {
                 const tableBody = document.getElementById('payments-table-body');
                 tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center;">পেমেন্টের তথ্য লোড হচ্ছে...</td></tr>`;
@@ -845,6 +887,7 @@
                         const timestamp = payment.timestamp ? new Date(payment.timestamp.seconds * 1000).toLocaleString('bn-BD') : 'N/A';
                         const statusClass = (payment.status || 'pending').toLowerCase();
 
+                        // এখানে onclick এ `this` এবং `payment.id` পাস করা হয়েছে
                         const row = `
                             <tr>
                                 <td>${payment.userEmail}</td>
@@ -856,12 +899,14 @@
                                     <span class="status-badge ${statusClass}">${payment.status}</span>
                                 </td>
                                 <td class="actions-cell">
-                                    <select class="status-select" id="status-select-${payment.id}">
+                                    <select class="status-select">
                                         <option value="pending" ${payment.status === 'pending' ? 'selected' : ''}>Pending</option>
                                         <option value="approved" ${payment.status === 'approved' ? 'selected' : ''}>Approved</option>
                                         <option value="rejected" ${payment.status === 'rejected' ? 'selected' : ''}>Rejected</option>
                                     </select>
-                                    <button class="btn btn-save-status" onclick="updatePaymentStatus('${payment.id}')">Save</button>
+                                    
+                                    <button class="btn btn-save-status" onclick="updatePaymentStatus(this, '${payment.id}')">Save</button>
+                                    
                                     <button class="btn-delete" onclick="deleteItem('payments', '${payment.id}')"><span class="material-symbols-outlined">delete</span></button>
                                 </td>
                             </tr>
@@ -870,8 +915,7 @@
                     });
                     tableBody.innerHTML = tableHTML;
                 } catch(error) {
-                    console.error("--- Payment Rendering Error ---");
-                    console.error("An error occurred while fetching payments:", error);
+                    console.error("--- Payment Rendering Error ---", error);
                     let errorMessage = `<tr><td colspan="7" style="color: red; text-align: center;">An error occurred. Check the console.</td></tr>`;
                     if (error.code === 'permission-denied') {
                         errorMessage = `<tr><td colspan="7" style="color: red; text-align: center;">Error: Permission Denied. Check your Firestore Security Rules.</td></tr>`;
@@ -879,19 +923,6 @@
                     tableBody.innerHTML = errorMessage;
                 }
             }
-
-            window.updatePaymentStatus = async (docId) => {
-                const newStatus = document.getElementById(`status-select-${docId}`).value;
-                try {
-                    await db.collection('payments').doc(docId).update({ status: newStatus });
-                    alert('স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!');
-                    renderPayments(); // Refresh the table
-                    renderDashboard(); // Refresh dashboard counts
-                } catch (error) {
-                    console.error("Error updating status:", error);
-                    alert('স্ট্যাটাস আপডেট করার সময় একটি সমস্যা হয়েছে।');
-                }
-            };
 
             async function renderUsers() {
                 const tableBody = document.getElementById('users-table-body');
@@ -1015,7 +1046,6 @@
                 }
             }
             
-            // --- START: New Render Function for Curriculum ---
             async function renderCurriculum() {
                 const tableBody = document.getElementById('curriculum-table-body');
                  tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center;">কারিকুলাম তথ্য লোড হচ্ছে...</td></tr>`;
@@ -1050,7 +1080,6 @@
                     tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">তথ্য লোড করতে সমস্যা হয়েছে।</td></tr>`;
                 }
             }
-            // --- END: New Render Function for Curriculum ---
 
             async function renderNotices() {
                 try {
@@ -1305,30 +1334,28 @@
                 }
             }
             
-            // --- Event Delegation for Dynamic Form (Curriculum) ---
             modalForm.addEventListener('click', function(e) {
-                // Add new module
-                if (e.target.id === 'add-module-btn') {
+                const addModuleBtn = e.target.closest('#add-module-btn');
+                const addVideoBtn = e.target.closest('.btn-add-video');
+                const removeBtn = e.target.closest('.btn-remove');
+
+                if (addModuleBtn) {
                     e.preventDefault();
                     const container = document.getElementById('curriculum-modules-container');
-                    const newModule = document.createElement('div');
-                    newModule.className = 'module-container';
-                    newModule.innerHTML = getModuleHTML();
-                    container.appendChild(newModule);
+                    container.insertAdjacentHTML('beforeend', getModuleHTML());
                 }
-                // Add new video
-                if (e.target.classList.contains('btn-add-video')) {
+                
+                if (addVideoBtn) {
                     e.preventDefault();
-                    const videosContainer = e.target.closest('.module-container').querySelector('.videos-container');
-                    const newVideo = document.createElement('div');
-                    newVideo.className = 'video-entry';
-                    newVideo.innerHTML = getVideoHTML();
-                    videosContainer.appendChild(newVideo);
+                    const videosContainer = addVideoBtn.previousElementSibling;
+                    if (videosContainer && videosContainer.classList.contains('videos-container')) {
+                        videosContainer.insertAdjacentHTML('beforeend', getVideoHTML());
+                    }
                 }
-                // Remove module or video
-                if (e.target.classList.contains('btn-remove')) {
+                
+                if (removeBtn) {
                      e.preventDefault();
-                     e.target.closest('.module-container, .video-entry').remove();
+                     removeBtn.closest('.module-container, .video-entry').remove();
                 }
             });
 
@@ -1347,27 +1374,29 @@
             // --- HTML Generators for Dynamic Curriculum Form ---
             function getModuleHTML(module = { title: '', videos: [] }) {
                  return `
-                    <div class="module-header-flex">
-                        <h4>মডিউল / ক্লাস</h4>
-                        <button type="button" class="btn btn-remove">মডিউল মুছুন</button>
+                    <div class="module-container">
+                        <div class="module-header-flex">
+                            <h4>মডিউল / ক্লাস</h4>
+                            <button type="button" class="btn btn-remove">মডিউল মুছুন</button>
+                        </div>
+                        <div class="form-group">
+                            <label>মডিউলের শিরোনাম</label>
+                            <input type="text" name="moduleTitle" placeholder="Class 01: Introduction" value="${module.title || ''}" required>
+                        </div>
+                        <div class="videos-container">
+                            ${(module.videos || []).map(getVideoHTML).join('')}
+                        </div>
+                        <button type="button" class="btn btn-add-small btn-add-video"><span class="material-symbols-outlined">add</span> নতুন ভিডিও যোগ করুন</button>
                     </div>
-                    <div class="form-group">
-                        <label>মডিউলের শিরোনাম</label>
-                        <input type="text" name="moduleTitle" placeholder="Class 01: Introduction" value="${module.title}" required>
-                    </div>
-                    <div class="videos-container">
-                        ${module.videos.map(getVideoHTML).join('')}
-                    </div>
-                    <button type="button" class="btn btn-add-small btn-add-video"><span class="material-symbols-outlined">add</span> নতুন ভিডিও যোগ করুন</button>
                  `;
             }
             
             function getVideoHTML(video = { title: '', youtubeLink: '', duration: '' }) {
                 return `
                     <div class="video-entry">
-                        <input type="text" name="videoTitle" placeholder="ভিডিওর শিরোনাম" value="${video.title}" required>
-                        <input type="text" name="videoLink" placeholder="ইউটিউব লিঙ্ক" value="${video.youtubeLink}" required>
-                        <input type="text" name="videoDuration" placeholder="সময়কাল (e.g., 10:45)" value="${video.duration}">
+                        <input type="text" name="videoTitle" placeholder="ভিডিওর শিরোনাম" value="${video.title || ''}" required>
+                        <input type="text" name="videoLink" placeholder="ইউটিউব লিঙ্ক" value="${video.youtubeLink || ''}" required>
+                        <input type="text" name="videoDuration" placeholder="সময়কাল (e.g., 10:45)" value="${video.duration || ''}">
                         <button type="button" class="btn btn-remove"><span class="material-symbols-outlined">delete</span></button>
                     </div>
                 `;
